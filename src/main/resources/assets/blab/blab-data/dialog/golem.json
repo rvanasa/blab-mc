@@ -1,7 +1,7 @@
 [
   {
     "filter": [
-      "minecraft:player attack minecraft:human"
+      "minecraft:iron_golem attack minecraft:player"
     ],
     "items": [
       {
@@ -17,7 +17,7 @@
   },
   {
     "filter": [
-      "minecraft:villager_golem jump"
+      "minecraft:iron_golem jump"
     ],
     "items": [
       {
