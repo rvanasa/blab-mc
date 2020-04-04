@@ -1,18 +1,16 @@
 package io.halfbeard.blab;
 
-import marytts.LocalMaryInterface;
-import marytts.MaryInterface;
-import marytts.exceptions.MaryConfigurationException;
-import marytts.util.data.audio.AudioPlayer;
 import net.minecraft.block.Block;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -20,11 +18,9 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.sound.sampled.AudioInputStream;
 import java.util.Random;
 
 import static io.halfbeard.blab.BlabMod.BLAB_MOD;
-import static io.halfbeard.blab.BlabMod.EventListeners.*;
 
 @Mod(BLAB_MOD)
 public class BlabMod {
@@ -37,6 +33,9 @@ public class BlabMod {
 
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.addListener(EventListeners::livingHurt);///////
+        MinecraftForge.EVENT_BUS.addListener(EventListeners::livingUpdate);///////
+        MinecraftForge.EVENT_BUS.addListener(EventListeners::livingInteract);///////
+        MinecraftForge.EVENT_BUS.addListener(EventListeners::livingJump);///////
     }
 
     private void setup(FMLCommonSetupEvent event) {
@@ -64,62 +63,49 @@ public class BlabMod {
             event.getRegistry().register(ITEM_SHELF.setRegistryName(SHELF.getRegistryName()));
         }
 
-        private static final Random RANDOM = new Random();
-        private static final MaryInterface MARY;
-        private static final String[] VOICES;
-        private static AudioPlayer prevPlayer;
-
-        static {
-            try {
-                MARY = new LocalMaryInterface();
-                VOICES = MARY.getAvailableVoices().toArray(new String[0]);
-
-                MARY.setVoice(VOICES[0]);
-            }
-            catch(MaryConfigurationException e) {
-                throw new RuntimeException(e);
-            }
+        @SubscribeEvent
+        public static void temp(FMLCommonSetupEvent event) throws Exception {
+            BlabUtils.startDialogText("The bird is the word.");
         }
 
         // TODO refactor
         public static void livingHurt(LivingHurtEvent event) {
+            LivingEntity entity = event.getEntityLiving();
             if(event.getEntityLiving().getHealth() <= event.getAmount()) {
+                BlabUtils.stopDialog(event.getEntityLiving());
                 return;
             }
 
-            if(event.getEntityLiving() instanceof VillagerEntity) {
-//                VillagerEntity villager = (VillagerEntity) event.getEntityLiving();
+            BlabUtils.playRandomDialog(entity.getType().getRegistryName() + " hurt", entity);
 
-                if(prevPlayer != null) {
-                    prevPlayer.cancel();
-                }
-
-                DialogData data = BlabUtils.randomDialogData("hurt");
-                try(AudioInputStream stream = MARY.generateAudio(data.text)) {
-                    AudioPlayer player = new AudioPlayer();
-                    player.setAudio(stream);
-                    player.start();
-                    prevPlayer = player;
-                }
-                catch(Exception e) {
-                    e.printStackTrace();
-                }
+            Entity source = event.getSource().getTrueSource();
+            if(source != null) {
+                BlabUtils.playRandomDialog(entity.getType().getRegistryName() + " attack", entity);
+                BlabUtils.playRandomDialog(source.getType().getRegistryName() + " attack " + entity.getType().getRegistryName(), entity);
             }
         }
 
-        @SubscribeEvent
-        public static void temp(FMLCommonSetupEvent event) {
+        private static final Random RANDOM = new Random();
 
-            MARY.setVoice(VOICES[RANDOM.nextInt(VOICES.length)]);
+        // TODO refactor
+        public static void livingUpdate(LivingEvent.LivingUpdateEvent event) {
+            LivingEntity entity = event.getEntityLiving();
+            if(RANDOM.nextInt(10000) == 0) {
+                BlabUtils.playRandomDialog(entity.getType().getRegistryName() + " idle", entity);
+            }
+        }
 
-            try(AudioInputStream stream = MARY.generateAudio("The bird is the word.")) {
-                AudioPlayer player = new AudioPlayer();
-                player.setAudio(stream);
-                player.start();
-            }
-            catch(Exception e) {
-                e.printStackTrace();
-            }
+        // TODO refactor
+        public static void livingInteract(PlayerInteractEvent.EntityInteract event) {
+            LivingEntity entity = event.getEntityLiving();
+            BlabUtils.playRandomDialog(entity.getType().getRegistryName() + " interact", entity);
+            //todo fix
+        }
+
+        // TODO refactor
+        public static void livingJump(LivingEvent.LivingJumpEvent event) {
+            LivingEntity entity = event.getEntityLiving();
+            BlabUtils.playRandomDialog(entity.getType().getRegistryName() + " jump", entity);
         }
     }
 }

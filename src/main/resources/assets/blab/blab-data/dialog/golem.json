@@ -1,0 +1,28 @@
+[
+  {
+    "filter": [
+      "minecraft:player attack minecraft:human"
+    ],
+    "items": [
+      {
+        "voice": "Ha ha ha ha."
+      },
+      {
+        "voice": "Surprise, little stevie stevie."
+      },
+      {
+        "voice": "How the tables have turned."
+      }
+    ]
+  },
+  {
+    "filter": [
+      "minecraft:villager_golem jump"
+    ],
+    "items": [
+      {
+        "voice": "Har core park ore."
+      }
+    ]
+  }
+]

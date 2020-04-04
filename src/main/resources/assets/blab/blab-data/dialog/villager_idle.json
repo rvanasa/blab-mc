@@ -1,0 +1,19 @@
+[
+  {
+    "filter": [
+      "minecraft:villager idle",
+      "minecraft:villager interact"
+    ],
+    "items": [
+      {
+        "voice": "There's some lovely filth over here."
+      },
+      {
+        "voice": "Don't touch the road."
+      },
+      {
+        "voice": "Where did I leave my spork?"
+      }
+    ]
+  }
+]
